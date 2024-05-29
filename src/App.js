@@ -1,25 +1,57 @@
-import logo from './logo.svg';
 import './App.css';
+import { useEffect, useMemo, useState } from 'react';
+import Axios from "axios"
+import Table from './Table';
 
 function App() {
+  const [data, setData] = useState([])
+
+  useEffect(() => {
+    Axios.get("http://localhost:8000/csv")
+      .then((res) => {
+        setData(res.data)
+      })
+  }, []);
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Tabela de Usuários",
+        columns: [
+          {
+            Header: "Nome",
+            accessor: "name"
+          },
+          {
+            Header: "Data de Nascimento",
+            accessor: "birthday"
+          },
+          {
+            Header: "Gênero",
+            accessor: "gender"
+          },
+          {
+            Header: "Nacionalidade",
+            accessor: "nationality"
+          },
+          {
+            Header: "Data de Criação",
+            accessor: "created"
+          },
+          {
+            Header: "Data de Atualização",
+            accessor: "updated"
+          }
+        ]
+      }
+    ],
+    []
+  );
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Table columns={columns} data={data} />
     </div>
   );
 }
-
 export default App;
