@@ -2,6 +2,7 @@ import React from "react";
 import { useTable, useFilters } from "react-table";
 import { useState } from 'react';
 import "./Table.css"
+
 function Table({ columns, data }) {
   const {
     getTableProps,

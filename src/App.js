@@ -14,6 +14,16 @@ function App() {
       })
   }, []);
 
+  const handleDelete = (id) => {
+    Axios.delete(`http://localhost:8000/csv/${id}`)
+      .then(() => {
+        setData(data.filter(item => item.id !== id));
+      })
+      .catch((error) => {
+        console.error('Error deleting item', error);
+      });
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -42,11 +52,17 @@ function App() {
           {
             Header: "Data de Atualização",
             accessor: "updated"
+          },
+          {
+            Header: "Ação",
+            Cell: ({ row }) => (
+              <button onClick={() => handleDelete(row.original.id)}>Deletar</button>
+            )
           }
         ]
       }
     ],
-    []
+    [data]
   );
 
   const handleFileChange = (event) => {
