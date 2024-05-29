@@ -1,9 +1,25 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTable, useFilters } from "react-table";
-import { useState } from 'react';
-import "./Table.css"
+import "./Table.css";
 
-function Table({ columns, data }) {
+function Table({ columns, data, setData }) {
+  const [skipPageReset, setSkipPageReset] = useState(false);
+
+  const updateMyData = (rowIndex, columnId, value) => {
+    setSkipPageReset(true);
+    setData(old =>
+      old.map((row, index) => {
+        if (index === rowIndex) {
+          return {
+            ...old[rowIndex],
+            [columnId]: value,
+          };
+        }
+        return row;
+      })
+    );
+  };
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -14,7 +30,9 @@ function Table({ columns, data }) {
   } = useTable(
     {
       columns,
-      data
+      data,
+      autoResetPage: !skipPageReset,
+      updateMyData
     },
     useFilters
   );
@@ -28,30 +46,33 @@ function Table({ columns, data }) {
   };
 
   return (
-    <table {...getTableProps()}>
-        <input value={valueInput} onChange={handleValueChange} placeholder={"Busca pelo nome"} />
-      <thead>
-        {headerGroups.map(headerGroup => (
-          <tr {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map(column => (
-              <th {...column.getHeaderProps()}>{column.render("Header")}</th>
-            ))}
-          </tr>
-        ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {rows.map((row, i) => {
-          prepareRow(row);
-          return (
-            <tr {...row.getRowProps()}>
-              {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
-              })}
+    <div>
+      <input value={valueInput} onChange={handleValueChange} placeholder={"Busca pelo nome"} />
+      <table {...getTableProps()}>
+        <thead>
+          {headerGroups.map(headerGroup => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map(column => (
+                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
+              ))}
             </tr>
-          );
-        })}
-      </tbody>
-    </table>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.map((row, i) => {
+            prepareRow(row);
+            return (
+              <tr {...row.getRowProps()}>
+                {row.cells.map(cell => {
+                  return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>;
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
+
 export default Table;

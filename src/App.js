@@ -12,6 +12,9 @@ function App() {
       .then((res) => {
         setData(res.data);
       })
+      .catch((error) => {
+        console.error('Error fetching data', error);
+      });
   }, []);
 
   const handleDelete = (id) => {
@@ -24,6 +27,18 @@ function App() {
       });
   };
 
+  const handleUpdate = (id, updatedData) => {
+
+    Axios.put(`http://localhost:8000/csv/${id}`, updatedData)
+      .then((response) => {
+        window.location.reload();
+        setData(data.map(item => item.id === id ? response.data : item));
+      })
+      .catch((error) => {
+        console.error('Error updating item', error);
+      });
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -31,19 +46,23 @@ function App() {
         columns: [
           {
             Header: "Nome",
-            accessor: "name"
+            accessor: "name",
+            Cell: EditableCell
           },
           {
             Header: "Data de Nascimento",
-            accessor: "birthday"
+            accessor: "birthday",
+            Cell: EditableCell
           },
           {
             Header: "Gênero",
-            accessor: "gender"
+            accessor: "gender",
+            Cell: EditableCell
           },
           {
             Header: "Nacionalidade",
-            accessor: "nationality"
+            accessor: "nationality",
+            Cell: EditableCell
           },
           {
             Header: "Data de Criação",
@@ -56,7 +75,10 @@ function App() {
           {
             Header: "Ação",
             Cell: ({ row }) => (
-              <button onClick={() => handleDelete(row.original.id)}>Deletar</button>
+              <>
+                <button onClick={() => handleUpdate(row.original.id, row.original)}>Salvar</button>
+                <button onClick={() => handleDelete(row.original.id)}>Deletar</button>
+              </>
             )
           }
         ]
@@ -92,7 +114,7 @@ function App() {
 
   return (
     <div className="App">
-      <Table columns={columns} data={data} />
+      <Table columns={columns} data={data} setData={setData} />
       <div className="upload-section">
         <input type="file" onChange={handleFileChange} />
         <button onClick={handleFileUpload}>Upload CSV</button>
@@ -100,5 +122,28 @@ function App() {
     </div>
   );
 }
+
+const EditableCell = ({
+  value: initialValue,
+  row: { index },
+  column: { id },
+  updateMyData
+}) => {
+  const [value, setValue] = useState(initialValue);
+
+  const onChange = e => {
+    setValue(e.target.value);
+  };
+
+  const onBlur = () => {
+    updateMyData(index, id, value);
+  };
+
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  return <input value={value} onChange={onChange} onBlur={onBlur} />;
+};
 
 export default App;
