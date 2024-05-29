@@ -1,15 +1,16 @@
 import './App.css';
 import { useEffect, useMemo, useState } from 'react';
-import Axios from "axios"
+import Axios from "axios";
 import Table from './Table';
 
 function App() {
-  const [data, setData] = useState([])
+  const [data, setData] = useState([]);
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
     Axios.get("http://localhost:8000/csv")
       .then((res) => {
-        setData(res.data)
+        setData(res.data);
       })
   }, []);
 
@@ -48,10 +49,40 @@ function App() {
     []
   );
 
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleFileUpload = () => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    Axios.post("http://localhost:8000/csv", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    .then((response) => {
+      console.log('File uploaded successfully', response.data);
+      Axios.get("http://localhost:8000/csv")
+        .then((res) => {
+          setData(res.data);
+        })
+    })
+    .catch((error) => {
+      console.error('Error uploading file', error);
+    });
+  };
+
   return (
     <div className="App">
       <Table columns={columns} data={data} />
+      <div className="upload-section">
+        <input type="file" onChange={handleFileChange} />
+        <button onClick={handleFileUpload}>Upload CSV</button>
+      </div>
     </div>
   );
 }
+
 export default App;
