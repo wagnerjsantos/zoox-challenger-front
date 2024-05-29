@@ -2,15 +2,27 @@ import './App.css';
 import { useEffect, useMemo, useState } from 'react';
 import Axios from "axios";
 import Table from './Table';
+import TableLogs from './TableLogs';
 
 function App() {
   const [data, setData] = useState([]);
+  const [dataLog, setDataLog] = useState([]);
   const [file, setFile] = useState(null);
 
   useEffect(() => {
     Axios.get("http://localhost:8000/csv")
       .then((res) => {
         setData(res.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching data', error);
+      });
+  }, []);
+
+  useEffect(() => {
+    Axios.get("http://localhost:8000/csv/logs")
+      .then((res) => {
+        setDataLog(res.data);
       })
       .catch((error) => {
         console.error('Error fetching data', error);
@@ -87,6 +99,25 @@ function App() {
     [data]
   );
 
+  const columnsLog = useMemo(
+    () => [
+      {
+        Header: "Tabela de Logs",
+        columns: [
+          {
+            Header: "Referência",
+            accessor: "reference"
+          },
+          {
+            Header: "Descrição",
+            accessor: "description"
+          }
+        ]
+      }
+    ],
+    [dataLog]
+  );
+
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
@@ -119,6 +150,7 @@ function App() {
         <input type="file" onChange={handleFileChange} />
         <button onClick={handleFileUpload}>Upload CSV</button>
       </div>
+      <TableLogs columns={columnsLog} data={dataLog} setData={setDataLog} />
     </div>
   );
 }
